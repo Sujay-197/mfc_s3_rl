@@ -1,0 +1,47 @@
+[
+  {
+    "episodes": 20,
+    "clear_rate": 0.75,
+    "mean_reward": 285.0300097167492,
+    "mean_x_max": 2887.05,
+    "best_x_max": 3161,
+    "greedy_clear": true,
+    "greedy_x_max": 3161,
+    "first_clear_steps": 44532,
+    "total_steps": 1013214,
+    "run": "simple_seed0",
+    "action_set": "simple",
+    "seed": 0,
+    "model": "runs\\simple_seed0\\best_model.zip"
+  },
+  {
+    "episodes": 20,
+    "clear_rate": 0.75,
+    "mean_reward": 268.40000855624675,
+    "mean_x_max": 2725.1,
+    "best_x_max": 3161,
+    "greedy_clear": true,
+    "greedy_x_max": 3161,
+    "first_clear_steps": 108160,
+    "total_steps": 1001089,
+    "run": "right_only_seed2",
+    "action_set": "right_only",
+    "seed": 2,
+    "model": "runs\\right_only_seed2\\best_model.zip"
+  },
+  {
+    "episodes": 20,
+    "clear_rate": 0.75,
+    "mean_reward": 257.805008585006,
+    "mean_x_max": 2611.9,
+    "best_x_max": 3161,
+    "greedy_clear": true,
+    "greedy_x_max": 3161,
+    "first_clear_steps": 71196,
+    "total_steps": 1007038,
+    "run": "simple_seed1",
+    "action_set": "simple",
+    "seed": 1,
+    "model": "runs\\simple_seed1\\best_model.zip"
+  }
+]

@@ -1,0 +1,19 @@
+# Virtual environment (4.6 GB)
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Training output: checkpoints and tensorboard logs are ~400 MB per run.
+# Per-run monitor.csv, config.json and first_clear.json are force-added
+# so the training curves and results can be regenerated without retraining.
+runs/
+logs/
+
+# Generated: page.html embeds the video and curve as base64 (~450 KB).
+# Rebuild it with `python src/build_page.py`.
+artifacts/page.html
+
+# Local tooling settings
+.claude/

@@ -1,0 +1,8 @@
+{
+  "action_set": "right_only",
+  "seed": 2,
+  "n_envs": 4,
+  "total_steps": 20000000,
+  "max_hours": 7.5,
+  "run_name": "right_only_seed2"
+}

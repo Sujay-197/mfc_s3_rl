@@ -1,19 +1,43 @@
-# Virtual environment (4.6 GB)
+# Virtual environment (~4.6 GB)
 .venv/
+venv/
+env/
 
-# Python
+# Python caches and build artefacts
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
 
 # Training output: checkpoints and tensorboard logs are ~400 MB per run.
 # Per-run monitor.csv, config.json and first_clear.json are force-added
-# so the training curves and results can be regenerated without retraining.
+# (git add -f) so curves and results regenerate without retraining, and
+# runs/simple_seed0/best_model.zip is force-added so the demo reproduces
+# directly. The glob covers every run directory, current and future.
 runs/
+
+# Run and tool logs: training stdout/stderr, smoke tests, frame dumps
 logs/
 
-# Generated: page.html embeds the video and curve as base64 (~450 KB).
-# Rebuild it with `python src/build_page.py`.
+# Generated: a results page embeds the video and curve as base64 (~450 KB
+# each). Rebuild with `python src/build_page.py --level X-Y`. The per-level
+# templates (page_template*.html) are committed; only built pages are
+# ignored. The negation is required because a template also matches the
+# page_* glob -- later rules win, so it must follow the ignore line.
 artifacts/page.html
+artifacts/page_*.html
+!artifacts/page_template*.html
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
 
 # Local tooling settings
 .claude/
+.cline/

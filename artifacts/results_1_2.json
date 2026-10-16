@@ -1,0 +1,38 @@
+[
+  {
+    "episodes": 20,
+    "clear_rate": 0.65,
+    "escapes": 0,
+    "mean_reward": 244.25500698275863,
+    "mean_x_max": 2573.05,
+    "best_x_max": 3161,
+    "greedy_clear": false,
+    "greedy_x_max": 2948,
+    "first_clear_steps": 324993,
+    "total_steps": 1102900,
+    "steps_per_sec": 102,
+    "run": "lvl12_complex_seed1",
+    "level": "1-2",
+    "action_set": "complex",
+    "seed": 1,
+    "model": "runs\\lvl12_complex_seed1\\best_model.zip"
+  },
+  {
+    "episodes": 20,
+    "clear_rate": 0.25,
+    "escapes": 0,
+    "mean_reward": 205.67500560618936,
+    "mean_x_max": 2123.4,
+    "best_x_max": 3161,
+    "greedy_clear": false,
+    "greedy_x_max": 2676,
+    "first_clear_steps": 398682,
+    "total_steps": 1084091,
+    "steps_per_sec": 100,
+    "run": "lvl12_complex_seed0",
+    "level": "1-2",
+    "action_set": "complex",
+    "seed": 0,
+    "model": "runs\\lvl12_complex_seed0\\best_model.zip"
+  }
+]

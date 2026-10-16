@@ -1,4 +1,4 @@
-"""Record a trained (or untrained) policy playing 1-1 to an mp4.
+"""Record a trained (or untrained) policy playing a level to an mp4.
 
 Kept separate from report.py so the encode path can be smoke-tested before
 any training starts -- discovering a missing encoder on deadline morning is
@@ -12,6 +12,7 @@ import numpy as np
 import imageio.v2 as imageio
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
+from levels import DEFAULT_LEVEL, LEVELS, get_level
 from mario_env import make_mario_env
 
 
@@ -27,8 +28,9 @@ def grab_frame(env):
     return np.array(env.unwrapped.screen, copy=True)
 
 
-def record(model_path, out_path, action_set="simple", episodes=3, fps=30,
-           deterministic=False, best_only=True, stagnation_steps=120):
+def record(model_path, out_path, action_set=None, level=DEFAULT_LEVEL,
+           episodes=3, fps=30, deterministic=False, best_only=True,
+           stagnation_steps=120):
     """Play `episodes` episodes; write the best one (or all) to `out_path`.
 
     Two recording-specific choices, neither of which affects evaluation:
@@ -43,7 +45,10 @@ def record(model_path, out_path, action_set="simple", episodes=3, fps=30,
       motionless. This trims the video only; it does not alter any
       reported metric.
     """
-    base = make_mario_env(action_set, render_mode="rgb_array")
+    if action_set is None:
+        action_set = get_level(level)["action_set"]
+    base = make_mario_env(level=level, action_set=action_set,
+                          render_mode="rgb_array")
     venv = VecFrameStack(DummyVecEnv([lambda: base]), 4)
     model = PPO.load(model_path, device="cpu") if model_path else None
 
@@ -101,7 +106,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=None, help="omit for a random policy")
     ap.add_argument("--out", default="artifacts/demo.mp4")
-    ap.add_argument("--action-set", choices=["simple", "right_only"], default="simple")
+    ap.add_argument("--level", choices=sorted(LEVELS), default=DEFAULT_LEVEL)
+    ap.add_argument("--action-set", choices=["simple", "right_only", "complex"],
+                    default=None, help="defaults to the level's configured set")
     ap.add_argument("--episodes", type=int, default=3)
     args = ap.parse_args()
-    record(args.model, args.out, args.action_set, args.episodes)
+    record(args.model, args.out, args.action_set, args.level, args.episodes)

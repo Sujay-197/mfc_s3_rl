@@ -1,13 +1,19 @@
-"""Diagnose a policy: x-position trajectory and stochastic-vs-greedy spread."""
+"""Diagnose a policy: x-position trajectory and stochastic-vs-greedy spread.
+
+    python src/diagnose.py <model.zip> <action_set> [level]
+"""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecFrameStack
+from levels import DEFAULT_LEVEL
 from mario_env import make_mario_env
 
 model_path, action_set = sys.argv[1], sys.argv[2]
-venv = VecFrameStack(DummyVecEnv([lambda: make_mario_env(action_set)]), 4)
+level = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_LEVEL
+venv = VecFrameStack(DummyVecEnv(
+    [lambda: make_mario_env(level=level, action_set=action_set)]), 4)
 model = PPO.load(model_path, device="cpu")
 
 # 1. greedy episode, logging x each agent step

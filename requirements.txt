@@ -1,0 +1,14 @@
+# Pinned to what this project was built and run against.
+# torch is installed separately from the CUDA index (see README), because the
+# PyPI wheel for Windows is CPU-only even when an NVIDIA driver is present.
+gym-super-mario-bros==9.1.0
+nes-py==9.0.1
+gymnasium==1.2.3
+stable-baselines3==2.8.0
+opencv-python-headless==5.0.0.93
+imageio
+imageio-ffmpeg
+matplotlib
+numpy
+pandas
+tensorboard

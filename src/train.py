@@ -1,7 +1,7 @@
-"""PPO training for Super Mario Bros. 1-1.
+"""PPO training for one Super Mario Bros. stage.
 
-One process trains one seed. Three of these run in parallel overnight
-(see run_all.py); each gets its own subdirectory under runs/.
+One process trains one seed. Several of these run in parallel overnight
+(see run_all.ps1); each gets its own subdirectory under runs/.
 
 Design notes:
   * No eval environment. NES emulation is the bottleneck, and a separate
@@ -19,12 +19,19 @@ import sys, os, time, argparse, json, pathlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
-from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack, VecMonitor
+# torch and the SB3 PPO algorithm are imported inside main() on purpose.
+# On Windows every SubprocVecEnv worker re-imports this module; a top-level
+# `from stable_baselines3 import PPO` makes each of those workers load the
+# full torch + CUDA runtime it never uses (it only builds an environment), and
+# on a 16 GB laptop that is enough to fail a rollout-buffer allocation of
+# less than 7 MB. The workers import only the factory module instead.
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecMonitor
+from levels import DEFAULT_LEVEL, LEVELS
 from mario_env import make_mario_env
 
-INFO_KEYWORDS = ("flag_get", "x_pos_max")
+# left_stage is the StageGuard flag: a warp pipe took the agent out of the level
+INFO_KEYWORDS = ("flag_get", "x_pos_max", "left_stage")
 
 
 class BestModelCallback(BaseCallback):
@@ -128,6 +135,25 @@ class WallClockCallback(BaseCallback):
         return time.time() < self.deadline
 
 
+def resolve_device(requested):
+    """Return the torch device to train on.
+
+    "auto" picks CUDA only when a usable GPU is actually present. This used to
+    be hardcoded to "cuda", which is an instant crash on a machine whose torch
+    build has no CUDA -- notably the PyPI torch wheel for Windows, which is
+    CPU-only and installs happily next to a working NVIDIA driver.
+    """
+    if requested != "auto":
+        return requested
+    try:
+        import torch
+        if torch.cuda.is_available():
+            return "cuda"
+    except Exception:
+        pass
+    return "cpu"
+
+
 def keep_system_awake():
     """Ask Windows not to sleep while this process runs.
 
@@ -147,23 +173,48 @@ def keep_system_awake():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--action-set", choices=["simple", "right_only"], default="simple")
+    ap.add_argument("--level", choices=sorted(LEVELS), default=DEFAULT_LEVEL)
+    ap.add_argument("--action-set", choices=["simple", "right_only", "complex"],
+                    default=None,
+                    help="defaults to the level's configured action set")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--n-envs", type=int, default=4)
     ap.add_argument("--total-steps", type=int, default=20_000_000)
     ap.add_argument("--max-hours", type=float, default=7.5)
+    ap.add_argument("--device", default="auto",
+                    help="'auto' uses CUDA when a usable GPU is present, else CPU")
     ap.add_argument("--run-name", default=None)
     args = ap.parse_args()
 
-    keep_system_awake()
+    spec = LEVELS[args.level]
+    if args.action_set is None:
+        args.action_set = spec["action_set"]
 
-    run_name = args.run_name or f"{args.action_set}_seed{args.seed}"
+    keep_system_awake()
+    device = resolve_device(args.device)
+
+    # 1-1 runs keep their original directory names; other levels are prefixed so
+    # two levels' runs can live in runs/ side by side without colliding.
+    if args.run_name:
+        run_name = args.run_name
+    elif args.level == DEFAULT_LEVEL:
+        run_name = f"{args.action_set}_seed{args.seed}"
+    else:
+        run_name = f"lvl{args.level.replace('-', '')}_{args.action_set}_seed{args.seed}"
     run_dir = pathlib.Path("runs") / run_name
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "config.json").write_text(json.dumps(vars(args), indent=2))
+    print(f"[{run_name}] level {args.level} ({spec['env_id']}), "
+          f"actions {args.action_set}, device {device}", flush=True)
+
+    # VecFrameStack is imported here, after the workers have been spawned, so
+    # they never pay for torch. See the import comment at the top of the file.
+    from stable_baselines3 import PPO
+    from stable_baselines3.common.vec_env import VecFrameStack
 
     venv = SubprocVecEnv(
-        [(lambda: make_mario_env(args.action_set)) for _ in range(args.n_envs)],
+        [(lambda: make_mario_env(level=args.level, action_set=args.action_set))
+         for _ in range(args.n_envs)],
         start_method="spawn")
     venv = VecMonitor(venv, filename=str(run_dir / "monitor.csv"),
                       info_keywords=INFO_KEYWORDS)
@@ -185,7 +236,7 @@ def main():
         seed=args.seed,
         verbose=1,
         tensorboard_log=str(run_dir / "tb"),
-        device="cuda",
+        device=device,
     )
 
     callbacks = [

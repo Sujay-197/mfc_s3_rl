@@ -1,0 +1,20 @@
+[
+  {
+    "episodes": 20,
+    "clear_rate": 0.45,
+    "escapes": 0,
+    "mean_reward": 244.34000756889583,
+    "mean_x_max": 2490.35,
+    "best_x_max": 3193,
+    "greedy_clear": true,
+    "greedy_x_max": 3193,
+    "first_clear_steps": 309812,
+    "total_steps": 2428167,
+    "steps_per_sec": 150,
+    "run": "lvl31_simple_seed0",
+    "level": "3-1",
+    "action_set": "simple",
+    "seed": 0,
+    "model": "runs\\lvl31_simple_seed0\\best_model.zip"
+  }
+]

@@ -184,6 +184,8 @@ def main():
     ap.add_argument("--device", default="auto",
                     help="'auto' uses CUDA when a usable GPU is present, else CPU")
     ap.add_argument("--run-name", default=None)
+    ap.add_argument("--no-resume", action="store_true",
+                    help="ignore existing checkpoints and start a fresh model")
     args = ap.parse_args()
 
     spec = LEVELS[args.level]
@@ -221,23 +223,45 @@ def main():
     venv = VecFrameStack(venv, 4)
     venv.seed(args.seed)
 
-    model = PPO(
-        "CnnPolicy", venv,
-        learning_rate=1e-4,
-        n_steps=512,
-        batch_size=256,
-        n_epochs=10,
-        gamma=0.9,
-        gae_lambda=0.95,
-        clip_range=0.2,
-        ent_coef=0.01,
-        vf_coef=0.5,
-        max_grad_norm=0.5,
-        seed=args.seed,
-        verbose=1,
-        tensorboard_log=str(run_dir / "tb"),
-        device=device,
-    )
+    # Continue from the newest valid periodic checkpoint when a run was
+    # interrupted.  Loading after constructing the matching environment keeps
+    # VecFrameStack/VecMonitor state compatible with the saved policy.
+    resume_path = None
+    if not args.no_resume:
+        import zipfile
+        candidates = sorted((run_dir / "checkpoints").glob("*.zip"),
+                            key=lambda p: p.stat().st_mtime, reverse=True)
+        for candidate in candidates:
+            try:
+                with zipfile.ZipFile(candidate) as zf:
+                    if zf.testzip() is None:
+                        resume_path = candidate
+                        break
+            except Exception:
+                continue
+
+    if resume_path is not None:
+        print(f"[{run_name}] resuming from {resume_path}", flush=True)
+        model = PPO.load(str(resume_path), env=venv, device=device,
+                         tensorboard_log=str(run_dir / "tb"))
+    else:
+        model = PPO(
+            "CnnPolicy", venv,
+            learning_rate=1e-4,
+            n_steps=512,
+            batch_size=256,
+            n_epochs=10,
+            gamma=0.9,
+            gae_lambda=0.95,
+            clip_range=0.2,
+            ent_coef=0.01,
+            vf_coef=0.5,
+            max_grad_norm=0.5,
+            seed=args.seed,
+            verbose=1,
+            tensorboard_log=str(run_dir / "tb"),
+            device=device,
+        )
 
     callbacks = [
         BestModelCallback(str(run_dir / "best_model")),
@@ -249,7 +273,7 @@ def main():
     ]
     try:
         model.learn(total_timesteps=args.total_steps, callback=callbacks,
-                    progress_bar=False)
+                    progress_bar=False, reset_num_timesteps=(resume_path is None))
     finally:
         model.save(str(run_dir / "final_model"))
         venv.close()

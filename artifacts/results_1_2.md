@@ -3,7 +3,7 @@
 Evaluation: 20 episodes per run with the **stochastic** policy, plus one **deterministic (greedy)** pass.
 
 The environment is deterministic, so the greedy policy produces an identical trajectory every run; it is reported as a single pass/fail. Clear rate below is the stochastic figure, which is the meaningful measure of robustness.
-The flagpole is at x ≈ 3161 (measured from the runs).
+The flagpole is at x ≈ 3161 (the level's recorded value).
 
 | run | clear rate | actions | seed | steps trained | first clear (steps) | mean reward | mean x | best x | greedy clears |
 |---|---|---|---|---|---|---|---|---|---|

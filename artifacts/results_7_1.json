@@ -1,0 +1,38 @@
+[
+  {
+    "episodes": 20,
+    "clear_rate": 0.8,
+    "escapes": 0,
+    "mean_reward": 267.6200083933771,
+    "mean_x_max": 2671.3,
+    "best_x_max": 2857,
+    "greedy_clear": true,
+    "greedy_x_max": 2857,
+    "first_clear_steps": 1500528,
+    "total_steps": 1260229,
+    "steps_per_sec": 83,
+    "run": "lvl71_simple_seed0",
+    "level": "7-1",
+    "action_set": "simple",
+    "seed": 0,
+    "model": "runs\\lvl71_simple_seed0\\best_model.zip"
+  },
+  {
+    "episodes": 20,
+    "clear_rate": 0.0,
+    "escapes": 0,
+    "mean_reward": 33.03000042028725,
+    "mean_x_max": 399.05,
+    "best_x_max": 882,
+    "greedy_clear": false,
+    "greedy_x_max": 50,
+    "first_clear_steps": null,
+    "total_steps": 88,
+    "steps_per_sec": 8,
+    "run": "test_lvl71",
+    "level": "7-1",
+    "action_set": "simple",
+    "seed": 0,
+    "model": "runs\\test_lvl71\\final_model.zip"
+  }
+]
